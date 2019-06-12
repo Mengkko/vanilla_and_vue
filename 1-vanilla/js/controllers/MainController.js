@@ -24,7 +24,8 @@ export default {
 
         HistoryView.setup(document.querySelector('#search-history'))
             .on('@click', e => this.onClickHistory(e.detail.keyword))
-        
+            .on('@remove', e => this.onRemoveHistory(e.detail.keyword))
+
         ResultView.setup(document.querySelector('#search-result'))
         
         this.selectedTab = '최근 검색어'
@@ -37,8 +38,10 @@ export default {
 
         if(this.selectedTab === '추천 검색어') {
             this.fetchSearchKeyword()
+            HistoryView.hide()
         } else{
             this.fetchSearchHistory()
+            KeywordView.hide()
         }
 
         ResultView.hide()
@@ -53,6 +56,7 @@ export default {
     fetchSearchHistory() {
         HistoryModel.list().then(data => {
             HistoryView.render(data)
+                .bindRemoveBtn()
         })
     },
 
@@ -90,5 +94,10 @@ export default {
 
     onClickHistory(keyword) {
         this.search(keyword)
+    },
+
+    onRemoveHistory(keyword) {
+        HistoryModel.remove(keyword)
+        this.renderView()
     }
 }
