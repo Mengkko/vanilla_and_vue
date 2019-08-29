@@ -17,13 +17,10 @@ export default {
       .on("@reset", e => this.onResetForm());
 
     TabView.setup(document.querySelector("#tabs")).on("@change", e =>
-      this.onChangeTab(e.detail.tabName)
-    );
+      this.onChangeTab(e.detail.tabName));
 
-    KeywordView.setup(document.querySelector("#search-keyword")).on(
-      "@click",
-      e => this.onClickKeyword(e.detail.keyword)
-    );
+    KeywordView.setup(document.querySelector("#search-keyword"))
+      .on("@click", e => this.onClickKeyword(e.detail.keyword));
 
     HistoryView.setup(document.querySelector("#search-history"))
       .on("@click", e => this.onClickHistory(e.detail.keyword))
@@ -64,6 +61,7 @@ export default {
 
   search(query) {
     FormView.setValue(query);
+    HistoryModel.add(query);
     SearchModel.list(query).then(data => {
       this.onSearchResult(data);
     });
