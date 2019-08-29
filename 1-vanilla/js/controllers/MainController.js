@@ -1,103 +1,106 @@
-import FormView from '../views/FormView.js'
-import ResultView from '../views/ResultView.js'
-import TabView from '../views/TabView.js'
-import KeywordView from '../views/KeywordView.js'
-import HistoryView from '../views/HistoryView.js'
+import FormView from "../views/FormView.js";
+import ResultView from "../views/ResultView.js";
+import TabView from "../views/TabView.js";
+import KeywordView from "../views/KeywordView.js";
+import HistoryView from "../views/HistoryView.js";
 
+import SearchModel from "../models/SearchModel.js";
+import KeywordModel from "../models/KeywordModel.js";
+import HistoryModel from "../models/HistoryModel.js";
 
-import SearchModel from '../models/SearchModel.js'
-import KeywordModel from '../models/KeywordModel.js'
-import HistoryModel from '../models/HistoryModel.js'
-
-const tag = '[MainController]'
+const tag = "[MainController]";
 
 export default {
-    init() {
-        FormView.setup(document.querySelector('form'))
-            .on('@submit', e => this.onSubmit(e.detail.input))
-            .on('@reset', e => this.onResetForm())
-        
-        TabView.setup(document.querySelector('#tabs'))
-            .on('@change', e => this.onChangeTab(e.detail))
-        KeywordView.setup(document.querySelector('#search-keyword'))
-            .on('@click', e => this.onClickKeyword(e.detail.keyword))
+  init() {
+    FormView.setup(document.querySelector("form"))
+      .on("@submit", e => this.onSubmit(e.detail.input))
+      .on("@reset", e => this.onResetForm());
 
-        HistoryView.setup(document.querySelector('#search-history'))
-            .on('@click', e => this.onClickHistory(e.detail.keyword))
-            .on('@remove', e => this.onRemoveHistory(e.detail.keyword))
+    TabView.setup(document.querySelector("#tabs")).on("@change", e =>
+      this.onChangeTab(e.detail.tabName)
+    );
 
-        ResultView.setup(document.querySelector('#search-result'))
-        
-        this.selectedTab = '최근 검색어'
-        this.renderView()
-    },
+    KeywordView.setup(document.querySelector("#search-keyword")).on(
+      "@click",
+      e => this.onClickKeyword(e.detail.keyword)
+    );
 
-    renderView() {
-        console.log(tag, 'renderView' )
-        TabView.setActiveTab(this.selectedTab)
+    HistoryView.setup(document.querySelector("#search-history"))
+      .on("@click", e => this.onClickHistory(e.detail.keyword))
+      .on("@remove", e => this.onRemoveHistory(e.detail.keyword));
 
-        if(this.selectedTab === '추천 검색어') {
-            this.fetchSearchKeyword()
-            HistoryView.hide()
-        } else{
-            this.fetchSearchHistory()
-            KeywordView.hide()
-        }
+    ResultView.setup(document.querySelector("#search-result"));
 
-        ResultView.hide()
-    },
+    this.selectedTab = "추천 검색어";
+    this.renderView();
+  },
 
-    fetchSearchKeyword() {
-        KeywordModel.list().then(data => {
-            KeywordView.render(data)
-        })
-    },
+  renderView() {
+    console.log(tag, "rednerView()");
+    TabView.setActiveTab(this.selectedTab);
 
-    fetchSearchHistory() {
-        HistoryModel.list().then(data => {
-            HistoryView.render(data)
-                .bindRemoveBtn()
-        })
-    },
-
-    search(query) {
-        FormView.setValue(query)
-        SearchModel.list(query)
-            .then(data => {
-                this.onSearchResult(data)
-            })
-    },
-    
-    onSubmit(input) {
-        console.log(tag,'onSubmit()',input)
-        this.search(input)
-    },
-
-    onResetForm() {
-        console.log(tag, '@onResetForm()')
-        this.renderView()
-    },
-
-    onSearchResult(data) {
-        TabView.hide()
-        KeywordView.hide()
-        ResultView.render(data)
-    },
-
-    onChangeTab(tabName) {
-        debugger
-    },
-
-    onClickKeyword(keyword) {
-        this.search(keyword)
-    },
-
-    onClickHistory(keyword) {
-        this.search(keyword)
-    },
-
-    onRemoveHistory(keyword) {
-        HistoryModel.remove(keyword)
-        this.renderView()
+    if (this.selectedTab === "추천 검색어") {
+      this.fetchSearchKeyword();
+      HistoryView.hide();
+    } else {
+      this.fetchSearchHistory();
+      KeywordView.hide();
     }
-}
+
+    ResultView.hide();
+  },
+
+  fetchSearchKeyword() {
+    KeywordModel.list().then(data => {
+      KeywordView.render(data);
+    });
+  },
+
+  fetchSearchHistory() {
+    HistoryModel.list().then(data => {
+      HistoryView.render(data).bindRemoveBtn();
+    });
+  },
+
+  search(query) {
+    FormView.setValue(query);
+    SearchModel.list(query).then(data => {
+      this.onSearchResult(data);
+    });
+  },
+
+  onSubmit(input) {
+    console.log(tag, "onSubmit()", input);
+    this.search(input);
+  },
+
+  onResetForm() {
+    console.log(tag, "onResetForm()");
+    this.renderView();
+  },
+
+  onSearchResult(data) {
+    TabView.hide();
+    KeywordView.hide();
+    HistoryView.hide();
+    ResultView.render(data);
+  },
+
+  onChangeTab(tabName) {
+    this.selectedTab = tabName;
+    this.renderView();
+  },
+
+  onClickKeyword(keyword) {
+    this.search(keyword);
+  },
+
+  onClickHistory(keyword) {
+    this.search(keyword);
+  },
+
+  onRemoveHistory(keyword) {
+    HistoryModel.remove(keyword);
+    this.renderView();
+  }
+};
